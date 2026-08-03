@@ -1,6 +1,6 @@
 /* 1. 전체 최외곽 컨테이너 레벨 정의 */
 .app-container {
-  max-width: 900px;
+  /* max-width: 900px; */
   margin: 40px 10px 40px 10px;
   padding: 30px 40px;
   background-color: #ffffff;
@@ -234,35 +234,7 @@ input:focus {
   box-shadow: 0 5px 15px rgba(46, 125, 50, 0.15);
 }
 
-/* 나중을 위한 코드 색상 선정 */
-
-/*
-맑음
-.weather-clear {
- background:#fff9c4;
-}
-
-
-비
-.weather-rain {
- background:#bbdefb;
-}
-
-
-구름
-.weather-cloud {
- background:#eceff1;
-}
-
-
-눈
-.weather-snow {
- background:#e3f2fd;
-}
-*/
-
 /* 모바일 대응 */
-
 @media (max-width: 600px) {
   .dashboard-wrapper {
     width: 100%;
