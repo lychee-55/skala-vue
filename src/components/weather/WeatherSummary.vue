@@ -1,4 +1,6 @@
 <script setup>
+import { useConfigStore } from '@/stores/configStore'
+
 defineProps({
   averageTemp: {
     type: Number,
@@ -15,17 +17,23 @@ defineProps({
     required: true,
   },
 })
+
+const configStore = useConfigStore()
+
+const displayTemp = (rawTemp) => {
+  return configStore.unit === 'fahrenheit' ? Math.round((rawTemp * 9) / 5 + 32) : rawTemp
+}
 </script>
 
 <template>
-  <section class="summary-box">
+  <section class="summary-box panel-box">
     <h3>📊 오늘 날씨 통계</h3>
 
     <div class="summary-grid">
       <div class="summary-card">
         <h4>🌡 평균 기온</h4>
 
-        <p>{{ averageTemp }}℃</p>
+        <p>{{ displayTemp(averageTemp) }} {{ configStore.unitSymbol }}</p>
       </div>
 
       <div class="summary-card">
@@ -33,8 +41,7 @@ defineProps({
 
         <p>
           {{ hottestCity.name }}
-
-          {{ hottestCity.temp }}℃
+          {{ displayTemp(hottestCity.temp) }} {{ configStore.unitSymbol }}
         </p>
       </div>
 
@@ -50,10 +57,6 @@ defineProps({
 <style scoped>
 .summary-box {
   background: #ffffff;
-  padding: 25px;
-  border-radius: 20px;
-  margin-bottom: 25px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
 .summary-grid {

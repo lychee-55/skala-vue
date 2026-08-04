@@ -1,14 +1,21 @@
 <script setup>
 import { computed } from 'vue'
+import { useConfigStore } from '@/stores/configStore'
+
+const configStore = useConfigStore()
 
 const props = defineProps({
   city: {
     type: Object,
     required: true,
   },
+  isFavorite: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-// const emit = defineEmits(['select'])
+const emit = defineEmits(['select', 'view-detail', 'toggle-favorite'])
 
 // 날씨 상태별 class
 
@@ -28,9 +35,8 @@ const weatherClass = computed(() => {
   }
 })
 
-// 알림 대행 함수
-const showDetail = (cityName, status) => {
-  window.alert(`${cityName}의 현재 날씨는 [${status}] 상태입니다.`)
+const displayTemp = (rawTemp) => {
+  return configStore.unit === 'fahrenheit' ? Math.round((rawTemp * 9) / 5 + 32) : rawTemp
 }
 </script>
 
@@ -38,13 +44,24 @@ const showDetail = (cityName, status) => {
   <div class="weather-card" :class="weatherClass" @click="emit('select')">
     <!-- 도시명 + 상태 -->
     <div class="weather-header">
-      <h4>
-        {{ city.name }}
-      </h4>
+      <div class="cityset">
+        <h4>
+          {{ city.name }}
+        </h4>
+        <span class="badge">
+          {{ city.status }}
+        </span>
+      </div>
 
-      <span class="badge">
-        {{ city.status }}
-      </span>
+      <div class="weather-actions">
+        <button
+          type="button"
+          :class="isFavorite ? 'favorite-btn-gold' : 'favorite-btn'"
+          @click.stop="emit('toggle-favorite', city.id)"
+        >
+          {{ isFavorite ? '★' : '☆' }} 즐겨찾기
+        </button>
+      </div>
     </div>
 
     <!-- 날씨 정보 영역 -->
@@ -53,15 +70,15 @@ const showDetail = (cityName, status) => {
       <div class="weather-main">
         <!-- 현재 온도 -->
         <div class="temperature">
-          {{ city.temp }}
-          <span>℃</span>
+          {{ displayTemp(city.temp) }}
+          <span>{{ configStore.unitSymbol }}</span>
         </div>
 
         <!-- 상세 정보 -->
         <div class="detail-info">
           <div>
             <span>체감</span>
-            <strong> {{ city.feelsLike }}℃ </strong>
+            <strong> {{ displayTemp(city.feelsLike) }} {{ configStore.unitSymbol }} </strong>
           </div>
 
           <div>
@@ -72,8 +89,7 @@ const showDetail = (cityName, status) => {
       </div>
 
       <!-- 오른쪽 버튼 -->
-      <!-- <button @click.stop="emit('select')">상세보기</button> -->
-      <button @click.stop="showDetail(city.name, city.status)">상세보기</button>
+      <button type="button" @click.stop="emit('view-detail', city.id)">상세보기</button>
     </div>
 
     <!-- 버튼 -->
@@ -102,19 +118,50 @@ const showDetail = (cityName, status) => {
 }
 
 .rain {
-  background: linear-gradient(135deg, #90caf9, #e3f2fd);
+  background: linear-gradient(135deg, #9faab3, #e3f2fd);
 }
 
 .cloud {
-  background: linear-gradient(135deg, #cfd8dc, #eceff1);
+  background: linear-gradient(135deg, #eff5f8, #eceff1);
 }
 
 .weather-header {
   display: flex;
-  justify-content: start;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
   gap: 12px;
+}
+
+.cityset {
+  display: flex;
+  gap: 12px;
+}
+
+.weather-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.favorite-btn-gold {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(228, 157, 24, 0.4);
+  background: #f5b431;
+  color: #fefeff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.favorite-btn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(49, 50, 128, 0.4);
+  background: rgba(255, 255, 255, 0.9);
+  color: #283266;
+  cursor: pointer;
+  font-weight: 700;
 }
 
 h4 {

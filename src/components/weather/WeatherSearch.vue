@@ -10,7 +10,7 @@ const emit = defineEmits(['update:modelValue'])
 </script>
 
 <template>
-  <section class="search-box">
+  <section class="search-box panel-box">
     <h3>🔍 도시 검색</h3>
 
     <input
@@ -32,9 +32,6 @@ const emit = defineEmits(['update:modelValue'])
 <style scoped>
 .search-box {
   background: linear-gradient(135deg, #e3f2fd, #ffffff);
-  padding: 25px;
-  border-radius: 20px;
-  margin-bottom: 25px;
   box-shadow: 0 8px 20px rgba(33, 150, 243, 0.12);
 }
 
