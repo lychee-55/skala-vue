@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
+import { formatTemperature } from '@/utils/temperature'
 
 const configStore = useConfigStore()
 
@@ -15,41 +16,30 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select', 'view-detail', 'toggle-favorite'])
-
-// 날씨 상태별 class
+const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
 
 const weatherClass = computed(() => {
-  switch (props.city.status) {
-    case '맑음':
-      return 'clear'
-
-    case '비':
-      return 'rain'
-
-    case '구름':
-      return 'cloud'
-
-    default:
-      return ''
-  }
+  return props.city.weather.type
 })
 
 const displayTemp = (rawTemp) => {
-  return configStore.unit === 'fahrenheit' ? Math.round((rawTemp * 9) / 5 + 32) : rawTemp
+  return formatTemperature(rawTemp, configStore.unit)
+}
+
+const handleViewDetail = (id) => {
+  emit('click-detail', id)
 }
 </script>
 
 <template>
-  <div class="weather-card" :class="weatherClass" @click="emit('select')">
-    <!-- 도시명 + 상태 -->
+  <div class="weather-card" :class="weatherClass" @click="emit('select-card', city)">
     <div class="weather-header">
       <div class="cityset">
         <h4>
           {{ city.name }}
         </h4>
         <span class="badge">
-          {{ city.status }}
+          {{ city.weather.label }}
         </span>
       </div>
 
@@ -64,21 +54,16 @@ const displayTemp = (rawTemp) => {
       </div>
     </div>
 
-    <!-- 날씨 정보 영역 -->
     <div class="weather-info">
-      <!-- 온도 + 상세정보 영역 -->
       <div class="weather-main">
-        <!-- 현재 온도 -->
-        <div class="temperature">
+        <div class="temperature" :class="{ 'temperature-hot': city.temp >= 35 }">
           {{ displayTemp(city.temp) }}
-          <span>{{ configStore.unitSymbol }}</span>
         </div>
 
-        <!-- 상세 정보 -->
         <div class="detail-info">
           <div>
             <span>체감</span>
-            <strong> {{ displayTemp(city.feelsLike) }} {{ configStore.unitSymbol }} </strong>
+            <strong>{{ displayTemp(city.feelsLike) }}</strong>
           </div>
 
           <div>
@@ -88,18 +73,15 @@ const displayTemp = (rawTemp) => {
         </div>
       </div>
 
-      <!-- 오른쪽 버튼 -->
-      <button type="button" @click.stop="emit('view-detail', city.id)">상세보기</button>
+      <button type="button" @click.stop="handleViewDetail(city.id)">상세보기</button>
     </div>
-
-    <!-- 버튼 -->
   </div>
 </template>
 
 <style scoped>
 .weather-card {
-  padding: 24px;
-  border-radius: 24px;
+  padding: var(--spacing);
+  border-radius: var(--radius);
   margin-bottom: 20px;
   cursor: pointer;
   transition:
@@ -121,8 +103,16 @@ const displayTemp = (rawTemp) => {
   background: linear-gradient(135deg, #9faab3, #e3f2fd);
 }
 
-.cloud {
+.clouds {
   background: linear-gradient(135deg, #eff5f8, #eceff1);
+}
+
+.snow {
+  background: linear-gradient(135deg, #dff2ff, #f9fcff);
+}
+
+.thunderstorm {
+  background: linear-gradient(135deg, #6b7280, #c6d2e0);
 }
 
 .weather-header {
@@ -171,8 +161,6 @@ h4 {
   color: #263238;
 }
 
-/* 상태 badge */
-
 .badge {
   padding: 6px 14px;
   border-radius: 20px;
@@ -187,25 +175,34 @@ h4 {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 35px;
+  gap: var(--spacing);
 }
 
 .weather-main {
   display: flex;
   align-items: center;
-  gap: 35px;
+  gap: var(--spacing-lg);
 }
 
-/* 큰 온도 */
 .temperature {
-  font-size: 56px;
+  font-size: 44px;
   font-weight: 700;
   color: #263238;
   line-height: 1;
 }
 
-.temperature span {
-  font-size: 28px;
+.temperature-hot {
+  background: linear-gradient(
+    to bottom,
+    #ff3838 0%,
+    #ff5a5a 15%,
+    #b34b4b 35%,
+    #5b4141 55%,
+    #263238 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .detail-info {
@@ -230,8 +227,6 @@ h4 {
 }
 
 button {
-  /* margin-top: 25px; */
-  /* max-width: 100%; */
   padding: 12px;
   border-radius: 18px;
   border: none;

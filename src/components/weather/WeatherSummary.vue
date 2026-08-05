@@ -1,5 +1,6 @@
 <script setup>
 import { useConfigStore } from '@/stores/configStore'
+import { formatTemperature } from '@/utils/temperature'
 
 defineProps({
   averageTemp: {
@@ -21,7 +22,7 @@ defineProps({
 const configStore = useConfigStore()
 
 const displayTemp = (rawTemp) => {
-  return configStore.unit === 'fahrenheit' ? Math.round((rawTemp * 9) / 5 + 32) : rawTemp
+  return formatTemperature(rawTemp, configStore.unit)
 }
 </script>
 
@@ -33,7 +34,7 @@ const displayTemp = (rawTemp) => {
       <div class="summary-card">
         <h4>🌡 평균 기온</h4>
 
-        <p>{{ displayTemp(averageTemp) }} {{ configStore.unitSymbol }}</p>
+        <p>{{ displayTemp(averageTemp) }}</p>
       </div>
 
       <div class="summary-card">
@@ -41,7 +42,7 @@ const displayTemp = (rawTemp) => {
 
         <p>
           {{ hottestCity.name }}
-          {{ displayTemp(hottestCity.temp) }} {{ configStore.unitSymbol }}
+          {{ displayTemp(hottestCity.temp) }}
         </p>
       </div>
 

@@ -9,73 +9,14 @@ defineProps({
     type: Array,
     required: true,
   },
-  weatherStatusFilter: {
-    type: String,
-    default: 'all',
-  },
-  filterOnlyFavorites: {
-    type: Boolean,
-    default: false,
-  },
 })
 
-const emit = defineEmits([
-  'select-city',
-  'view-detail',
-  'toggle-favorite',
-  'update:weather-status-filter',
-  'toggle-favorites-only',
-])
+const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
 </script>
 
 <template>
-  <section class="list-box panel-box">
-    <div class="list-header">
-      <h3>🏙 지역별 날씨</h3>
-      <div class="list-filters">
-        <div class="status-filters">
-          <button
-            :class="{ active: weatherStatusFilter === 'all' }"
-            type="button"
-            @click="emit('update:weather-status-filter', 'all')"
-          >
-            전체
-          </button>
-          <button
-            :class="{ active: weatherStatusFilter === '맑음' }"
-            type="button"
-            @click="emit('update:weather-status-filter', '맑음')"
-          >
-            맑음
-          </button>
-          <button
-            :class="{ active: weatherStatusFilter === '비' }"
-            type="button"
-            @click="emit('update:weather-status-filter', '비')"
-          >
-            비
-          </button>
-          <button
-            :class="{ active: weatherStatusFilter === '구름' }"
-            type="button"
-            @click="emit('update:weather-status-filter', '구름')"
-          >
-            구름
-          </button>
-        </div>
-
-        <div class="favorite-filter-wrapper">
-          <button
-            class="favorite-filter-btn"
-            :class="{ active: filterOnlyFavorites }"
-            type="button"
-            @click="emit('toggle-favorites-only')"
-          >
-            {{ filterOnlyFavorites ? '전체 보기' : '즐겨찾기만 보기' }}
-          </button>
-        </div>
-      </div>
-    </div>
+  <section class="list-box">
+    <h3>🏙 지역별 날씨</h3>
 
     <div v-if="weatherList.length">
       <WeatherCard
@@ -83,8 +24,8 @@ const emit = defineEmits([
         :key="city.id"
         :city="city"
         :is-favorite="configStore.isFavorite(city.id)"
-        @select="emit('select-city', city)"
-        @view-detail="emit('view-detail', $event)"
+        @select-card="emit('select-card', city)"
+        @click-detail="emit('click-detail', $event)"
         @toggle-favorite="emit('toggle-favorite', $event)"
       />
     </div>
@@ -95,66 +36,25 @@ const emit = defineEmits([
 
 <style scoped>
 .list-box {
-  background: #f8fafc;
-}
-
-.list-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.list-header h3 {
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
   margin: 0;
+  padding: 0;
+  overflow-y: auto;
 }
 
-.list-filters {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  /* width: 100%; */
+h3 {
+  margin: 0 0 12px;
+  padding: 0 4px;
 }
 
-.status-filters {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+.list-box :deep(.weather-card) {
+  margin-bottom: 12px;
 }
 
-.status-filters button,
-.favorite-filter-btn {
-  padding: 10px 14px;
-  border-radius: 14px;
-  border: 1px solid #d0d7de;
-  background: #ffffff;
-  color: #2c3e50;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.status-filters button.active {
-  background: #3498db;
-  color: white;
-  border-color: #3498db;
-}
-
-.favorite-filter-btn {
-  min-width: 170px;
-}
-
-/* .favorite-filter-btn.active {
-  background: #f5b431;
-  color: #2c3e50;
-  border-color: #f5b431;
-} */
-
-.favorite-filter-wrapper {
-  margin-left: auto;
-}
+.list-box > div { min-height: 0; }
 
 .empty {
   text-align: center;

@@ -1,22 +1,26 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '@/stores/configStore'
+import { useWeatherStore } from '@/stores/weatherStore'
+import { ElOption, ElSelect } from 'element-plus'
+import 'element-plus/es/components/select/style/css'
 
-import WeatherSearch from '@/components/weather/WeatherSearch.vue'
-import WeatherSummary from '@/components/weather/WeatherSummary.vue'
+import BaseDashboardCard from '@/components/BaseDashboardCard.vue'
+import SearchBar from '@/components/weather/SearchBar.vue'
 import WeatherList from '@/components/weather/WeatherList.vue'
-import WeatherStatus from '@/components/weather/WeatherStatus.vue'
+import WeatherNationalSummary from '@/components/weather/WeatherNationalSummary.vue'
 
 const router = useRouter()
+const route = useRoute()
 const configStore = useConfigStore()
+const weatherStore = useWeatherStore()
+const { cities } = storeToRefs(weatherStore)
 
 const searchQuery = ref('')
 const filterOnlyFavorites = ref(false)
 const weatherStatusFilter = ref('all')
-const cities = ref([])
-const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
 
 const filteredCities = computed(() => {
   let result = cities.value
@@ -24,7 +28,7 @@ const filteredCities = computed(() => {
     result = result.filter((city) => configStore.isFavorite(city.id))
   }
   if (weatherStatusFilter.value !== 'all') {
-    result = result.filter((city) => city.status === weatherStatusFilter.value)
+    result = result.filter((city) => city.weather.type === weatherStatusFilter.value)
   }
   if (!searchQuery.value) {
     return result
@@ -32,87 +36,9 @@ const filteredCities = computed(() => {
   return result.filter((city) => city.name.includes(searchQuery.value))
 })
 
-const averageTemp = computed(() => {
-  if (!filteredCities.value.length) return 0
-  const sum = filteredCities.value.reduce((sum, city) => sum + city.temp, 0)
-  return Math.round(sum / filteredCities.value.length)
-})
-
-const hottestCity = computed(() => {
-  return (
-    filteredCities.value.reduce(
-      (max, city) => (city.temp > max.temp ? city : max),
-      filteredCities.value[0] || { name: '-', temp: 0, status: '-', feelsLike: 0 },
-    ) || { name: '-', temp: 0, status: '-', feelsLike: 0 }
-  )
-})
-
-// const displayTemp = (rawTemp) => {
-//   if (configStore.unit === 'fahrenheit') {
-//     return Math.round((rawTemp * 9) / 5 + 32)
-//   }
-//   return rawTemp
-// }
-
-const loadWeatherData = async () => {
-  try {
-    const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY
-    if (!apiKey) {
-      throw new Error('OpenWeather API key missing')
-    }
-    console.log(apiKey)
-    const response = await axios.get('https://api.openweathermap.org/data/2.5/group', {
-      params: {
-        id: '1835848,1835235,1835553,1833744,1835327',
-        units: 'metric',
-        appid: apiKey,
-      },
-    })
-    cities.value = response.data.list.map((item) => ({
-      id: item.id.toString(),
-      name: item.name,
-      temp: Math.round(item.main.temp),
-      feelsLike: Math.round(item.main.feels_like),
-      humidity: item.main.humidity,
-      wind: item.wind.speed,
-      status: item.weather[0]?.main || '맑음',
-    }))
-  } catch (error) {
-    console.error('API 불러오기 실패, mock data 사용', error)
-    cities.value = [
-      {
-        id: '1835848',
-        name: '서울',
-        temp: 28,
-        feelsLike: 30,
-        humidity: 65,
-        wind: 3,
-        status: '맑음',
-      },
-      {
-        id: '1835235',
-        name: '수원',
-        temp: 24,
-        feelsLike: 25,
-        humidity: 80,
-        wind: 5,
-        status: '비',
-      },
-      {
-        id: '1835553',
-        name: '부산',
-        temp: 26,
-        feelsLike: 28,
-        humidity: 70,
-        wind: 4,
-        status: '구름',
-      },
-    ]
-  }
-}
-
 const selectCity = (city) => {
-  selectedCityInfo.value = `${city.name}이 선택되었습니다.`
+  weatherStore.selectCity(city)
+  if (route.name === 'weather-detail') router.push({ name: 'dashboard' })
 }
 
 const viewDetail = (cityId) => {
@@ -123,61 +49,130 @@ const toggleFavorite = (cityId) => {
   configStore.toggleFavorite(cityId)
 }
 
-onMounted(loadWeatherData)
+const loadCityList = () => {
+  if (!route.params.cityId && !cities.value.length) weatherStore.fetchWeather()
+}
+
+onMounted(loadCityList)
+watch(
+  () => route.params.cityId,
+  () => loadCityList(),
+)
 </script>
 
 <template>
-  <div class="dashboard-wrapper">
-    <div class="top-bar">
-      <h1>🌤 Weather Dashboard</h1>
-    </div>
+  <section class="weather-home">
+    <BaseDashboardCard>
+      <WeatherNationalSummary :cities="cities" />
+    </BaseDashboardCard>
 
-    <WeatherSummary
-      :average-temp="averageTemp"
-      :hottest-city="hottestCity"
-      :rain-city-count="filteredCities.filter((city) => city.status === '비').length"
-    />
+    <BaseDashboardCard>
+      <SearchBar :query="searchQuery" @update-query="searchQuery = $event" />
+    </BaseDashboardCard>
 
-    <WeatherSearch v-model="searchQuery" />
+    <BaseDashboardCard class="city-list-card">
+      <div class="list-filters">
+        <ElSelect v-model="weatherStatusFilter" class="status-select" aria-label="날씨 상태 필터">
+          <ElOption label="전체 날씨" value="all" />
+          <ElOption label="맑음" value="clear" />
+          <ElOption label="구름" value="clouds" />
+          <ElOption label="비" value="rain" />
+        </ElSelect>
+        <button type="button" @click="filterOnlyFavorites = !filterOnlyFavorites">
+          {{ filterOnlyFavorites ? '전체 보기' : '즐겨찾기' }}
+        </button>
+      </div>
 
-    <WeatherList
-      :weather-list="filteredCities"
-      :weather-status-filter="weatherStatusFilter"
-      :filter-only-favorites="filterOnlyFavorites"
-      @select-city="selectCity"
-      @view-detail="viewDetail"
-      @toggle-favorite="toggleFavorite"
-      @update:weather-status-filter="(value) => (weatherStatusFilter = value)"
-      @toggle-favorites-only="() => (filterOnlyFavorites = !filterOnlyFavorites)"
-    />
-
-    <WeatherStatus :message="selectedCityInfo" />
-  </div>
+      <WeatherList
+        :weather-list="filteredCities"
+        @select-card="selectCity"
+        @click-detail="viewDetail"
+        @toggle-favorite="toggleFavorite"
+      />
+    </BaseDashboardCard>
+  </section>
 </template>
 
 <style scoped>
-.top-bar {
+.weather-home {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px;
+  overflow: hidden;
 }
 
-.top-actions {
-  display: flex;
-  justify-content: end;
-  align-items: center;
-  gap: 12px;
+.weather-home :deep(.list-box) {
+  flex: 1;
 }
 
-.top-actions button {
-  padding: 10px 16px;
-  border-radius: 14px;
-  border: 1px solid #3498db;
-  background: #ffffff;
-  color: #3498db;
+.weather-home > .dashboard-card {
+  flex: 0 0 auto;
+}
+
+.weather-home > .dashboard-card + .dashboard-card {
+  margin-top: var(--spacing-sm);
+}
+
+.weather-home > .city-list-card {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: var(--spacing-sm);
+}
+
+.list-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+button {
+  min-height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
   font-weight: 700;
+}
+
+.status-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.status-select :deep(.el-select__wrapper) {
+  min-height: 36px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--color-border) inset;
+}
+
+.status-select :deep(.el-select__wrapper.is-focused) {
+  box-shadow: 0 0 0 1px var(--color-primary) inset;
+}
+
+button {
+  padding: 0 12px;
+}
+
+button.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+}
+
+@media (max-width: 800px) {
+  .weather-home { overflow: hidden; }
+
+  .weather-home > .city-list-card {
+    height: auto;
+    flex: 1 1 auto;
+  }
+
+  .weather-home :deep(.list-box) { max-height: none; }
+  .weather-home :deep(.weather-card) { min-height: 118px; }
 }
 </style>

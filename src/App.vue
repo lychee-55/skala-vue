@@ -1,55 +1,88 @@
 <script setup>
-import { RouterLink } from 'vue-router'
-import UnitToggler from './components/UnitToggler.vue'
+import { RouterLink, RouterView } from 'vue-router'
+import UnitToggler from '@/components/UnitToggler.vue'
 </script>
 
 <template>
-  <div class="app-container">
-    <header class="app-header">
-      <nav class="app-nav">
+  <div class="app-shell">
+    <header class="app-navigation">
+      <RouterLink class="app-brand" to="/">Weather Dashboard</RouterLink>
+      <nav aria-label="주요 메뉴">
         <RouterLink to="/">대시보드</RouterLink>
+        <RouterLink to="/map">날씨 지도</RouterLink>
+        <RouterLink to="/vocabulary">오늘의 영어</RouterLink>
         <RouterLink to="/about">서비스 소개</RouterLink>
       </nav>
       <UnitToggler />
     </header>
 
-    <main class="app-main">
-      <router-view />
+    <main class="app-content">
+      <RouterView />
     </main>
   </div>
 </template>
 
-<style>
-.app-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
+<style scoped>
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
 }
 
-.app-header {
+.app-navigation {
   display: flex;
-  justify-content: space-between;
+  min-height: var(--navigation-height);
   align-items: center;
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: var(--spacing);
+  padding: 0 var(--layout-padding);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
-.app-nav {
-  display: flex;
-  gap: 20px;
-}
-
-.app-nav a {
-  color: #2c3e50;
+.app-brand {
+  color: var(--color-text);
+  font-weight: 800;
   text-decoration: none;
+  white-space: nowrap;
+}
+
+nav {
+  display: flex;
+  gap: 4px;
+}
+
+nav a {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: #52616f;
+  font-size: 14px;
   font-weight: 700;
+  text-decoration: none;
 }
 
-.app-nav a.router-link-active {
-  color: #3498db;
+nav a.router-link-exact-active {
+  background: #e6f3fc;
+  color: var(--color-primary);
 }
 
-.app-main {
-  min-height: calc(100vh - 120px);
+.app-navigation :deep(.unit-toggler) {
+  margin-left: auto;
+}
+
+.app-content {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .app-navigation {
+    flex-wrap: wrap;
+    padding: var(--spacing-sm) var(--spacing);
+  }
+
+  .app-navigation :deep(.unit-toggler) {
+    margin-left: 0;
+  }
 }
 </style>
