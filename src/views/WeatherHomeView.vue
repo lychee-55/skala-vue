@@ -168,11 +168,19 @@ button.active {
   .weather-home { overflow: hidden; }
 
   .weather-home > .city-list-card {
-    height: auto;
-    flex: 1 1 auto;
+    /* 카드(약 118px) 3.5개와 목록 제목이 보이는 높이까지만 유지한다. */
+    height: 478px;
+    max-height: 478px;
+    flex: 0 1 478px;
   }
 
-  .weather-home :deep(.list-box) { max-height: none; }
+  .weather-home :deep(.list-box) {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .weather-home :deep(.list-box > div) { padding-bottom: 2px; }
   .weather-home :deep(.weather-card) { min-height: 118px; }
 }
 </style>
