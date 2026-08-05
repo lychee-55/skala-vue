@@ -3,8 +3,23 @@ import { defineStore } from 'pinia'
 import { fetchCities, fetchCurrentWeather, fetchFiveDayForecast } from '@/services/weatherApi'
 
 const CITY_IDS = [
-  '1835848', '1838524', '1835327', '1843561', '1841811', '1835235', '1833747', '1835553', '1846326',
-  '1846266', '1845136', '1845604', '1845457', '1841066', '1846986', '1839071', '1842485',
+  '1835848',
+  '1838524',
+  '1835327',
+  '1843561',
+  '1841811',
+  '1835235',
+  '1833747',
+  '1835553',
+  '1846326',
+  '1846266',
+  '1845136',
+  '1845604',
+  '1845457',
+  '1841066',
+  '1846986',
+  '1839071',
+  '1842485',
 ]
 
 export const useWeatherStore = defineStore('weather', () => {
@@ -42,7 +57,8 @@ export const useWeatherStore = defineStore('weather', () => {
 
   const selectCity = async (cityOrId) => {
     const cityId = typeof cityOrId === 'object' ? cityOrId.id : cityOrId
-    const city = typeof cityOrId === 'object' ? cityOrId : cities.value.find((item) => item.id === cityId)
+    const city =
+      typeof cityOrId === 'object' ? cityOrId : cities.value.find((item) => item.id === cityId)
     if (!city) return
 
     selectedCity.value = city

@@ -131,6 +131,7 @@ watch(
 
 button {
   min-height: 36px;
+  padding: 0 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: var(--color-surface);
@@ -154,18 +155,10 @@ button {
   box-shadow: 0 0 0 1px var(--color-primary) inset;
 }
 
-button {
-  padding: 0 12px;
-}
-
-button.active {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: white;
-}
-
 @media (max-width: 800px) {
-  .weather-home { overflow: hidden; }
+  .weather-home {
+    overflow: hidden;
+  }
 
   .weather-home > .city-list-card {
     /* 카드(약 118px) 3.5개와 목록 제목이 보이는 높이까지만 유지한다. */
@@ -180,7 +173,11 @@ button.active {
     overscroll-behavior: contain;
   }
 
-  .weather-home :deep(.list-box > div) { padding-bottom: 2px; }
-  .weather-home :deep(.weather-card) { min-height: 118px; }
+  .weather-home :deep(.list-box > div) {
+    padding-bottom: 2px;
+  }
+  .weather-home :deep(.weather-card) {
+    min-height: 118px;
+  }
 }
 </style>

@@ -19,7 +19,9 @@ const emit = defineEmits(['update-query'])
       placeholder="검색할 도시 이름 입력"
       @input="emit('update-query', $event.target.value)"
     />
-    <p>검색 중인 도시: <strong>{{ query || '전체' }}</strong></p>
+    <p>
+      검색 중인 도시: <strong>{{ query || '전체' }}</strong>
+    </p>
   </div>
 </template>
 

@@ -69,7 +69,9 @@ export const fetchCurrentWeather = (cityId) =>
 // Use the verified Current Weather endpoint for each configured city instead.
 export const fetchCities = async (cityIds) => {
   const results = await Promise.allSettled(cityIds.map((cityId) => fetchCurrentWeather(cityId)))
-  const cities = results.filter((result) => result.status === 'fulfilled').map((result) => result.value)
+  const cities = results
+    .filter((result) => result.status === 'fulfilled')
+    .map((result) => result.value)
 
   if (!cities.length) {
     const failure = results.find((result) => result.status === 'rejected')

@@ -54,7 +54,9 @@ h3 {
   margin-bottom: 12px;
 }
 
-.list-box > div { min-height: 0; }
+.list-box > div {
+  min-height: 0;
+}
 
 .empty {
   text-align: center;

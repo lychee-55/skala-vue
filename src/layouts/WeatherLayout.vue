@@ -45,26 +45,6 @@ import WeatherHomeView from '@/views/WeatherHomeView.vue'
   z-index: 1;
 }
 
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.sidebar-eyebrow {
-  margin: 0 0 4px;
-  color: var(--color-text);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-}
-
-h1 {
-  margin: 0;
-  font-size: 22px;
-}
-
 .weather-main {
   display: flex;
   flex: 1 1 auto;
